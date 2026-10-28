@@ -4,9 +4,11 @@
 
 echo "🎫 启动大麦抢票脚本..."
 
-# 设置Android环境变量
-export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
-export ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk
+# 项目根目录（脚本所在目录）
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# 加载环境变量（抢票脚本需 adb 做设备自动探测）
+source "$PROJECT_DIR/env.sh"
 
 # 检查Appium服务器是否运行
 if ! curl -s http://127.0.0.1:4723/status > /dev/null; then
@@ -27,7 +29,7 @@ echo "✅ 配置文件存在"
 
 # 显示当前配置
 echo "📋 当前配置:"
-echo "   $(cat damai_appium/config.jsonc | grep -E '"keyword"|"city"|"users"' | head -3)"
+echo "   $(cat damai_appium/config.jsonc | grep -E '"city"|"users"|"price_index"' | head -3)"
 
 # 确认是否继续
 read -p "🤔 确认开始抢票？(y/N): " -n 1 -r
@@ -47,5 +49,5 @@ echo "   2. 已搜索到目标演出"
 echo "   3. 已进入演出详情页面"
 echo ""
 
-# 运行抢票脚本
-/Users/shengwang/Library/Caches/pypoetry/virtualenvs/damai-ticket-automation-L9sk-bCq-py3.12/bin/python damai_app_v2.py
+# 运行抢票脚本（项目内 .venv）
+"$PROJECT_DIR/.venv/bin/python" damai_app_v2.py

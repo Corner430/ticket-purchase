@@ -5,7 +5,7 @@ import os
 import tempfile
 from pathlib import Path
 from typing import Generator
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
@@ -31,24 +31,6 @@ def mock_config() -> dict:
         "retry_times": 3,
         "timeout": 30,
     }
-
-
-@pytest.fixture
-def mock_selenium_driver():
-    """Mock Selenium WebDriver for unit tests."""
-    with patch("selenium.webdriver.Chrome") as mock_driver_class:
-        mock_driver = Mock()
-        mock_driver_class.return_value = mock_driver
-        
-        # Common WebDriver methods
-        mock_driver.get = Mock()
-        mock_driver.find_element = Mock()
-        mock_driver.find_elements = Mock()
-        mock_driver.quit = Mock()
-        mock_driver.current_url = "https://example.com"
-        mock_driver.title = "Test Page"
-        
-        yield mock_driver
 
 
 @pytest.fixture
@@ -110,7 +92,6 @@ def reset_environment(monkeypatch):
     env_vars_to_clear = [
         "DAMAI_USERNAME",
         "DAMAI_PASSWORD",
-        "SELENIUM_DRIVER_PATH",
         "APPIUM_SERVER_URL",
     ]
     

@@ -1,14 +1,15 @@
 # 大麦抢票自动化系统
 
-一个基于Selenium和Appium的大麦网抢票自动化工具，支持Web端和移动端抢票。
+一个基于 Appium 的大麦网**移动端**抢票自动化工具,通过驱动安卓设备上的大麦 App 完成选城市、选票价、选观演人、提交订单的流程。
 
 ## 🚀 功能特性
 
-- **双端支持**：支持Web端（Selenium）和移动端（Appium）抢票
-- **智能抢票**：自动选择城市、票价、观演人员
-- **高性能**：优化的点击策略，适合抢票场景
-- **可配置**：灵活的配置文件，支持多种演出设置
-- **重试机制**：内置重试逻辑，提高成功率
+- **移动端抢票**:基于 Appium + UiAutomator2,驱动安卓真机/模拟器上的大麦 App
+- **智能抢票**:自动选择城市、票价、观演人员
+- **高性能**:优化的原生坐标点击策略,适合抢票场景
+- **可配置**:灵活的配置文件,支持多种演出设置
+
+> 说明:大麦大部分热门票只能在 App 端购买,因此本项目只保留移动端方案。
 
 ## 📋 系统要求
 
@@ -17,14 +18,10 @@
 - **Node.js**: 20.19.0+ 或 22.12.0+ 或 24.0.0+
 - **操作系统**: macOS / Windows / Linux
 
-### Web端抢票
-- **Chrome浏览器**: 最新版本
-- **ChromeDriver**: 自动下载
-
 ### 移动端抢票
-- **Android SDK**: 已配置环境变量
-- **Appium**: 3.1.0+
-- **Android设备**: 真机或模拟器
+- **Android SDK**: 已配置环境变量(含 adb / emulator)
+- **Appium**: 3.x + UiAutomator2 驱动
+- **Android设备**: 真机或模拟器(实战建议真机)
 
 ## 🛠️ 安装指南
 
@@ -34,65 +31,47 @@ git clone <repository-url>
 cd ticket-purchase
 ```
 
-### 2. 安装Python依赖
+### 2. 安装 Python 依赖
 ```bash
-# 使用Poetry（推荐）
+# 使用 Poetry(推荐)
 poetry install
 
-# 或使用pip
-pip install -r requirements.txt
+# 或使用 venv + pip
+python3 -m venv .venv
+.venv/bin/pip install Appium-Python-Client selenium
 ```
 
-### 3. 移动端环境配置（仅移动端抢票需要）
-
-#### 3.1 安装Node.js
+### 3. 安装 Node.js 与 Appium
 ```bash
-# macOS (使用Homebrew)
+# macOS
 brew install node
-
-# 验证版本（需要20.19.0+）
-node --version
-```
-
-#### 3.2 安装Appium
-```bash
-# 全局安装Appium
-npm install -g appium
-
-# 安装UiAutomator2驱动
+npm install -g appium          # 或装到项目内:npm install appium
 appium driver install uiautomator2
-
-# 验证安装
 appium --version
 ```
 
-#### 3.3 配置Android环境
+### 4. 配置 Android 环境
 ```bash
-# 设置环境变量（添加到 ~/.zshrc 或 ~/.bashrc）
+# 设置环境变量(添加到 ~/.zshrc 或 ~/.bashrc),路径换成你自己的 SDK
 export ANDROID_HOME=/path/to/your/android/sdk
 export ANDROID_SDK_ROOT=/path/to/your/android/sdk
+export PATH="\$ANDROID_HOME/platform-tools:\$ANDROID_HOME/emulator:\$PATH"
 
-# 验证ADB
-adb devices
+adb devices   # 验证
 ```
 
 ## ⚙️ 配置说明
 
-### 移动端配置 (config.jsonc)
+### 移动端配置 (damai_appium/config.jsonc)
 
 ```json
 {
   "server_url": "http://127.0.0.1:4723",
-  "keyword": "刘若英",
-  "users": [
-    "观演人1",
-    "观演人2"
-  ],
+  "device_name": "auto",
+  "users": ["观演人1", "观演人2"],
   "city": "泉州",
-  "date": "10.04",
-  "price": "799元",
   "price_index": 1,
-  "if_commit_order": true
+  "if_commit_order": false
 }
 ```
 
@@ -100,217 +79,99 @@ adb devices
 
 | 参数 | 类型 | 说明 | 示例 |
 |------|------|------|------|
-| `server_url` | string | Appium服务器地址 | `"http://127.0.0.1:4723"` |
-| `keyword` | string | 搜索关键词 | `"刘若英"` |
+| `server_url` | string | Appium 服务器地址 | `"http://127.0.0.1:4723"` |
+| `device_name` | string | 设备序列号。`"auto"`=自动探测唯一设备;多设备时填 `adb devices` 的序列号 | `"auto"` |
 | `users` | array | 观演人员名单 | `["张三", "李四"]` |
 | `city` | string | 演出城市 | `"泉州"` |
-| `date` | string | 演出日期 | `"10.04"` |
-| `price` | string | 票价描述 | `"799元"` |
-| `price_index` | number | 票价索引（从0开始） | `1` |
-| `if_commit_order` | boolean | 是否自动提交订单 | `true` |
-
-### Web端配置 (config.json)
-
-```json
-{
-  "index_url": "https://www.damai.cn/",
-  "login_url": "https://passport.damai.cn/login",
-  "target_url": "https://detail.damai.cn/item.htm?id=xxx",
-  "users": ["张三", "李四"],
-  "city": "广州",
-  "date": "2023-10-28",
-  "price": "1039",
-  "if_commit_order": true
-}
-```
+| `price_index` | number | 票价索引(从 0 开始) | `1` |
+| `if_commit_order` | boolean | 是否真实提交订单(**默认 false 安全;设 true 才真下单**) | `false` |
 
 ## 🚀 使用方法
 
-### 移动端抢票（推荐）
-
-#### 1. 启动Android设备
+### 1. 启动 Android 设备
 ```bash
-# 启动模拟器
-/Users/shengwang/Library/Android/sdk/emulator/emulator -avd YourAVDName
+# 启动模拟器(名称换成你的 AVD)
+emulator -avd YourAVDName
 
-# 或连接真机（需开启USB调试）
+# 或连接真机(需开启 USB 调试)
 adb devices
 ```
 
-#### 2. 安装大麦APP
-在Android设备上安装大麦APP，并登录账号。
+### 2. 安装并登录大麦 App
+在 Android 设备上安装大麦 App 并登录账号。
 
-#### 3. 启动Appium服务器
+### 3. 启动 Appium 服务器
 ```bash
-# 设置环境变量
-export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
-export ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk
-
-# 启动Appium服务器
-appium --port 4723
+./start_appium.sh
 ```
+> **新设备首次使用**务必用 `./start_appium.sh` 启动:它会检查设备、并**按需一次性安装** Appium 的 uiautomator2 辅助包(华为机需在手机点一次「继续安装」)。装过之后抢票时会跳过安装(`skipServerInstallation: True`),更快更稳。
+>
+> 也可手动启动:`appium --address 0.0.0.0 --port 4723 --relaxed-security`(但需自行确保辅助包已装)。
 
-#### 4. 配置抢票参数
-编辑 `damai_appium/config.jsonc` 文件，设置：
-- 搜索关键词
-- 观演人员
-- 城市、日期、票价
-- 其他参数
+### 4. 配置抢票参数
+编辑 `damai_appium/config.jsonc`:观演人员(users)、城市(city)、票价索引(price_index)、是否真实下单(if_commit_order,默认 false)。
 
-#### 5. 运行抢票脚本
+### 5. 运行抢票脚本
+先在设备上把大麦 App 操作到目标演出详情页,然后:
 ```bash
 cd damai_appium
-ANDROID_HOME=/Users/shengwang/Library/Android/sdk ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk python damai_app_v2.py
-```
-
-### Web端抢票
-
-#### 1. 配置参数
-编辑 `damai/config.json` 文件，设置目标演出URL和其他参数。
-
-#### 2. 运行抢票脚本
-```bash
-cd damai
-python damai.py
+python damai_app_v2.py
 ```
 
 ## 🔧 故障排除
 
-### 常见问题
-
-#### 1. Node.js版本不兼容
+#### 1. Node.js 版本不兼容
 ```
 Error: Node version must be at least ^20.19.0 || ^22.12.0 || >=24.0.0
 ```
-**解决方案**：升级Node.js到兼容版本
-```bash
-# macOS
-brew upgrade node
-```
+升级 Node.js:`brew upgrade node`
 
-#### 2. Android环境变量未设置
+#### 2. Android 环境变量未设置
 ```
 Error: Neither ANDROID_HOME nor ANDROID_SDK_ROOT environment variable was exported
 ```
-**解决方案**：设置环境变量
-```bash
-export ANDROID_HOME=/path/to/android/sdk
-export ANDROID_SDK_ROOT=/path/to/android/sdk
-```
+按"安装指南第 4 步"设置 `ANDROID_HOME` / `ANDROID_SDK_ROOT`。
 
-#### 3. 设备连接问题
-```
-Error: Unable to find an active device or emulator
-```
-**解决方案**：
-- 检查设备连接：`adb devices`
-- 确保设备已开启USB调试
-- 检查Android版本是否匹配
+#### 3. 设备连接问题 / adb device offline
+- 检查连接:`adb devices`
+- 瞬时掉线:手动 `adb reconnect offline`,彻底则 `adb kill-server && adb start-server`(代码层当前无自动重连兜底)
 
-#### 4. Appium连接失败
-```
-Error: Connection refused
-```
-**解决方案**：
-- 确保Appium服务器正在运行
-- 检查端口4723是否被占用
-- 验证服务器地址配置
+#### 4. Appium 连接失败
+- 确保 Appium 服务器在运行、端口 4723 未被占用
+- `curl http://127.0.0.1:4723/status` 应返回 ready
 
 ### 调试技巧
-
-#### 1. 检查设备状态
 ```bash
-# 检查连接的设备
-adb devices
-
-# 检查设备Android版本
-adb shell getprop ro.build.version.release
-
-# 检查设备是否完全启动
-adb shell getprop sys.boot_completed
-```
-
-#### 2. 验证Appium连接
-```bash
-# 检查Appium服务器状态
-curl http://127.0.0.1:4723/status
-```
-
-#### 3. 查看应用包名
-```bash
-# 查看已安装的应用
-adb shell pm list packages | grep damai
+adb devices                                   # 连接的设备
+adb shell getprop ro.build.version.release    # Android 版本
+adb shell getprop sys.boot_completed          # 是否完全启动
+curl http://127.0.0.1:4723/status             # Appium 状态
+adb shell pm list packages | grep damai       # 大麦包名
 ```
 
 ## 📁 项目结构
 
 ```
 ticket-purchase/
-├── damai/                    # Web端抢票
-│   ├── damai.py             # 主程序
-│   ├── config.py            # 配置类
-│   ├── config.json          # 配置文件
-│   └── requirements.txt      # 依赖文件
 ├── damai_appium/             # 移动端抢票
-│   ├── damai_app_v2.py      # 优化版主程序
-│   ├── damai_app.py         # 原版主程序
+│   ├── damai_app_v2.py      # 主程序
 │   ├── config.py            # 配置类
 │   ├── config.jsonc         # 配置文件
 │   └── app.md               # 应用说明
-├── tests/                    # 测试文件
-├── doc/                      # 文档
+├── tests/                    # 测试
+├── doc/                      # 文档(问题记录、架构设计、流程图)
 ├── img/                      # 图片资源
 └── README.md                 # 说明文档
 ```
 
-## 🎯 使用流程
-
-### 移动端抢票完整流程
-
-1. **环境准备**
-   - 安装Node.js (20.19.0+)
-   - 安装Appium和驱动
-   - 配置Android SDK环境变量
-
-2. **设备准备**
-   - 启动Android模拟器或连接真机
-   - 安装大麦APP并登录
-
-3. **配置参数**
-   - 编辑 `config.jsonc` 文件
-   - 设置演出信息、观演人员等
-
-4. **启动服务**
-   - 启动Appium服务器
-   - 验证设备连接
-
-5. **执行抢票**
-   - 在模拟器上打开大麦APP
-   - 搜索目标演出
-   - 运行抢票脚本
-
-6. **监控结果**
-   - 脚本自动执行抢票流程
-   - 查看控制台输出
-   - 检查订单状态
-
 ## ⚠️ 注意事项
 
-1. **合法使用**：请遵守大麦网的使用条款，合理使用自动化工具
-2. **账号安全**：建议使用专门的测试账号
-3. **网络环境**：确保网络连接稳定
-4. **设备性能**：建议使用性能较好的设备进行抢票
-5. **时间设置**：提前设置好抢票时间，确保脚本在开售时间运行
-
-## 🤝 贡献指南
-
-欢迎提交Issue和Pull Request来改进项目。
+1. **合法使用**:请遵守大麦网使用条款,合理使用自动化工具
+2. **账号安全**:建议使用专门的测试账号
+3. **网络环境**:确保网络连接稳定
+4. **风控**:大麦/阿里风控会拦截自动化,尤其模拟器环境;本项目不绕过风控
+5. **时间设置**:提前起服务、保温会话,在开售时刻触发
 
 ## 📄 许可证
 
-本项目仅供学习和研究使用，请勿用于商业用途。
-
----
-
-**最后更新**: 2024年10月
-**版本**: 2.0.0
+本项目仅供学习和研究使用,请勿用于商业用途。

@@ -30,16 +30,14 @@
 ```json
 {
   "server_url": "http://127.0.0.1:4723",
-  "keyword": "刘若英",
+  "device_name": "auto",
   "users": [
     "观演人1",
     "观演人2"
   ],
   "city": "泉州",
-  "date": "10.04",
-  "price": "799元",
   "price_index": 1,
-  "if_commit_order": true
+  "if_commit_order": false
 }
 ```
 
@@ -54,17 +52,17 @@ brew upgrade node
 ### 问题2：Android设备未连接
 ```bash
 # 启动模拟器
-/Users/shengwang/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_36.0
+emulator -avd damai_test
 
 # 检查设备
-/Users/shengwang/Library/Android/sdk/platform-tools/adb devices
+adb devices
 ```
 
 ### 问题3：Appium服务器未启动
 ```bash
-# 设置环境变量并启动
-export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
-export ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk
+# 设置环境变量并启动（路径换成你自己的 SDK）
+export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+export ANDROID_SDK_ROOT=$ANDROID_HOME
 appium --port 4723
 ```
 

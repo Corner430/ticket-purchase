@@ -49,13 +49,12 @@ fi
 # 检查Android SDK
 echo ""
 echo "📱 检查Android SDK..."
-if [ -d "/Users/shengwang/Library/Android/sdk" ]; then
-    echo "✅ Android SDK路径存在"
-    export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
-    export ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk
+source "$(dirname "$0")/env.sh"
+if [ -d "$ANDROID_HOME" ]; then
+    echo "✅ Android SDK路径存在: $ANDROID_HOME"
 else
-    echo "❌ Android SDK路径不存在"
-    echo "   请安装Android Studio并配置SDK"
+    echo "❌ Android SDK路径不存在: $ANDROID_HOME"
+    echo "   请安装 Android SDK，或设置 ANDROID_HOME 指向你的 SDK"
     exit 1
 fi
 
@@ -65,7 +64,7 @@ echo "🔧 检查ADB..."
 if command -v adb &> /dev/null; then
     echo "✅ ADB可用"
 else
-    ADB_PATH="/Users/shengwang/Library/Android/sdk/platform-tools/adb"
+    ADB_PATH="$ANDROID_HOME/platform-tools/adb"
     if [ -f "$ADB_PATH" ]; then
         echo "✅ ADB路径: $ADB_PATH"
     else
@@ -77,16 +76,17 @@ fi
 # 检查Android设备
 echo ""
 echo "📱 检查Android设备..."
-DEVICES=$(/Users/shengwang/Library/Android/sdk/platform-tools/adb devices | grep -c "device$")
+ADB="$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")"
+DEVICES=$($ADB devices | grep -c "device$")
 if [ $DEVICES -eq 0 ]; then
     echo "⚠️  未检测到Android设备"
     echo "   请启动模拟器或连接真机"
-    echo "   启动模拟器: /Users/shengwang/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_36.0"
+    echo "   启动模拟器: emulator -avd damai_test"
 else
     echo "✅ 检测到 $DEVICES 个Android设备"
     
     # 检查大麦APP
-    if /Users/shengwang/Library/Android/sdk/platform-tools/adb shell pm list packages | grep -q "cn.damai"; then
+    if $ADB shell pm list packages | grep -q "cn.damai"; then
         echo "✅ 大麦APP已安装"
     else
         echo "⚠️  大麦APP未安装"
@@ -110,7 +110,7 @@ echo "📋 检查配置文件..."
 if [ -f "damai_appium/config.jsonc" ]; then
     echo "✅ 配置文件存在"
     echo "   当前配置:"
-    cat damai_appium/config.jsonc | grep -E '"keyword"|"city"|"users"' | head -3 | sed 's/^/   /'
+    cat damai_appium/config.jsonc | grep -E '"city"|"users"|"price_index"' | head -3 | sed 's/^/   /'
 else
     echo "❌ 配置文件不存在"
     echo "   请创建 damai_appium/config.jsonc 文件"

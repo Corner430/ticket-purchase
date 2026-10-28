@@ -159,7 +159,6 @@ geckodriver.log
 chromedriver.log
 
 # Application specific
-config.json
 credentials.json
 *.cookie
 *.pkl
@@ -179,3 +178,13 @@ credentials.json
 # Lock files (except poetry.lock)
 *.lock
 !poetry.lock
+
+# Node / Appium (本机 Appium 安装产物，不入库)
+node_modules/
+npm-debug.log*
+.appium/
+# Appium 驱动/缓存
+**/.cache/appium/
+
+# 本地调试/日志产物
+*.xml.bak
