@@ -23,6 +23,9 @@
 - **Appium**: 3.x + UiAutomator2 驱动
 - **Android设备**: 真机或模拟器(实战建议真机)
 
+> ⚠️ **测试基线(重要)**:选择器/流程针对 **大麦 App v9.0.37**(2026-10-29 真机华为 TEL-AN10 / Android 10 实测走通)。
+> 大麦改版后选择器可能失效——流程与选择器详见 `doc/抢票流程与状态机.md`,届时对照更新并在该文件标注新版本号。
+
 ## 🛠️ 安装指南
 
 ### 1. 克隆项目
@@ -69,8 +72,8 @@ adb devices   # 验证
   "server_url": "http://127.0.0.1:4723",
   "device_name": "auto",
   "users": ["观演人1", "观演人2"],
-  "city": "泉州",
-  "price_index": 1,
+  "perform_index": 0,
+  "price_index": 0,
   "if_commit_order": false
 }
 ```
@@ -81,10 +84,10 @@ adb devices   # 验证
 |------|------|------|------|
 | `server_url` | string | Appium 服务器地址 | `"http://127.0.0.1:4723"` |
 | `device_name` | string | 设备序列号。`"auto"`=自动探测唯一设备;多设备时填 `adb devices` 的序列号 | `"auto"` |
-| `users` | array | 观演人员名单 | `["张三", "李四"]` |
-| `city` | string | 演出城市 | `"泉州"` |
-| `price_index` | number | 票价索引(从 0 开始) | `1` |
-| `if_commit_order` | boolean | 是否真实提交订单(**默认 false 安全;设 true 才真下单**) | `false` |
+| `users` | array | 实名观演人姓名(张数=勾选人数) | `["张三", "李四"]` |
+| `perform_index` | number | 场次索引(从 0 开始) | `0` |
+| `price_index` | number | 票价索引(从 0 开始;价格文字隐藏,靠索引) | `0` |
+| `if_commit_order` | boolean | 是否真实提交下单。**不写则代码默认 true**;写 `false` 可覆盖为调试不下单 | `false` |
 
 ## 🚀 使用方法
 
@@ -98,7 +101,8 @@ adb devices
 ```
 
 ### 2. 安装并登录大麦 App
-在 Android 设备上安装大麦 App 并登录账号。
+在 Android 设备上安装大麦 App、**登录账号**,并**提前添加好实名观演人**(与 config 的 `users` 对应)。
+> 开抢型演出请在开售前用 App 的「设置抢票信息/预约」把场次、票档、观演人**预选好**(观演人预选是网页 H5,脚本不介入);开抢时大麦会自动勾选,脚本只需确定→提交。
 
 ### 3. 启动 Appium 服务器
 ```bash
@@ -109,14 +113,19 @@ adb devices
 > 也可手动启动:`appium --address 0.0.0.0 --port 4723 --relaxed-security`(但需自行确保辅助包已装)。
 
 ### 4. 配置抢票参数
-编辑 `damai_appium/config.jsonc`:观演人员(users)、城市(city)、票价索引(price_index)、是否真实下单(if_commit_order,默认 false)。
+先复制模板:`cp damai_appium/config.example.jsonc damai_appium/config.jsonc`(config.jsonc 含个人信息、已 gitignore 不入库),再编辑 `damai_appium/config.jsonc`:设备(device_name,默认 auto 自动探测)、观演人(users)、场次索引(perform_index)、票价索引(price_index)、是否真实下单(if_commit_order,代码默认 true;写 false 可覆盖为调试不下单)。
 
 ### 5. 运行抢票脚本
-先在设备上把大麦 App 操作到目标演出详情页,然后:
+先在设备上把大麦 App 操作到**目标演出详情页**,然后:
 ```bash
 cd damai_appium
 python damai_app_v2.py
 ```
+脚本会自动:点购买→选场次/票档→(实名)勾观演人→提交。其间有**两个必须人工**的点:
+> 1. **提交后弹阿里风控**:在手机上**手动滑动完成验证**(脚本不绕过,会等你最多 60s);
+> 2. **跳转支付宝支付页 = 票已锁定**:在支付宝里**手动输密码/刷脸付款**(脚本到此止步)。
+>
+> 调试时把 `if_commit_order` 设 `false`:脚本走到订单页就停,不提交、不弹风控、不下单。
 
 ## 🔧 故障排除
 
@@ -148,6 +157,8 @@ adb shell getprop sys.boot_completed          # 是否完全启动
 curl http://127.0.0.1:4723/status             # Appium 状态
 adb shell pm list packages | grep damai       # 大麦包名
 ```
+
+> 📖 抢票流程与页面状态机(维护/改选择器前必读):见 `doc/抢票流程与状态机.md`
 
 ## 📁 项目结构
 

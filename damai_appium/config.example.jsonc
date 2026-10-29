@@ -1,0 +1,18 @@
+{
+  // ⚠️ 这是模板。复制为 config.jsonc 后按需修改：cp config.example.jsonc config.jsonc
+  //    config.jsonc 含个人信息、已被 .gitignore 忽略，不会入库。
+  "server_url": "http://127.0.0.1:4723",
+  // device_name: 设备序列号。"auto"=自动探测唯一设备；多设备时填 `adb devices` 的序列号
+  "device_name": "auto",
+  // users: 实名观演人姓名列表（填你在大麦已添加的观演人；张数=勾选人数）
+  "users": [
+    "观演人姓名"
+  ],
+  // perform_index: 场次索引（从 0 开始）。SKU 页第几个场次；单场次填 0
+  "perform_index": 0,
+  // price_index: 票档索引（从 0 开始）。价格文字被隐藏，只能靠索引（用 Appium Inspector 数）
+  "price_index": 0,
+  // if_commit_order: 是否真实提交下单。不写则代码默认 true（真实提交，会弹风控需人工）。
+  //                   调试想"停在订单页不下单"就写 false；实战删此行或写 true
+  "if_commit_order": false
+}
